@@ -100,6 +100,7 @@ void stepMode()
   {
   }
   dataIn = Serial.readStringUntil('\n');
+
   // Split the data into two strings, separated by a comma
   String lengthString = dataIn.substring(0, dataIn.indexOf(","));
   String angleString = dataIn.substring(dataIn.indexOf(",") + 1);
@@ -140,7 +141,6 @@ void angleMode()
   {
   }
   dataIn = Serial.readStringUntil('\n');
-  Serial.println(dataIn);
 
   // Split the data into separate variables
   String length = dataIn.substring(0, dataIn.indexOf(","));
@@ -160,6 +160,9 @@ void angleMode()
 
     // Ask user if the data is correct
     Serial.println("Is this data correct? (y/n)");
+    while (Serial.available() == 0)
+    {
+    }
     confirmation = Serial.readStringUntil('\n');
     Serial.println(confirmation);
     Serial.println("");
