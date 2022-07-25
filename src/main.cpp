@@ -115,8 +115,8 @@ void stepMode()
   int angleSteps = angleString.toInt();
 
   // Confirm the data is correct
-  Serial.println("Length Steps: " + String(lengthSteps));
-  Serial.println("Angle Steps: " + String(angleSteps));
+  Serial.println("Length: " + String(lengthSteps) + " steps");
+  Serial.println("Angle: " + String(angleSteps) + " steps");
   Serial.println("");
 
   // Ask user if the data is correct
@@ -161,8 +161,8 @@ void angleMode()
   {
 
     // Confirm the data is correct
-    Serial.println("Length: " + String(lengthFloat));
-    Serial.println("Angle: " + String(angleFloat));
+    Serial.println("Length: " + String(lengthFloat) + " mm");
+    Serial.println("Angle: " + String(angleFloat) + " degrees");
     Serial.println("");
 
     // Ask user if the data is correct
