@@ -77,6 +77,18 @@ void bend(float angleSteps, float lengthSteps)
 #endif
 }
 
+bool angleValid(float angle)
+{
+  if (angle >= 0 && angle <= 90)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
 void stepMode()
 {
   // Read data from serial port. "lengthSteps" as int, "angleSteps" as int, separated by a comma
@@ -135,31 +147,38 @@ void angleMode()
   String angle = dataIn.substring(dataIn.indexOf(",") + 1);
 
   // Convert the strings to floats
-  float lengthFloat = length.toInt();
-  float angleFloat = angle.toInt();
+  float lengthFloat = length.toFloat();
+  float angleFloat = angle.toFloat();
 
-  // Confirm the data is correct
-  Serial.println("Length: " + String(lengthFloat));
-  Serial.println("Angle: " + String(angleFloat));
-  Serial.println("");
-
-  // Ask user if the data is correct
-  Serial.println("Is this data correct? (y/n)");
-  confirmation = Serial.readStringUntil('\n');
-  Serial.println(confirmation);
-  Serial.println("");
-
-  // Get angleSteps from mapping the angle to the number of steps with function angleToSteps
-  int angleSteps = angleToSteps(angleFloat);
-
-  // Convert the length to steps
-  int lengthSteps = lengthToSteps(lengthFloat);
-
-  // If confirmation is "y" call bending function with the angle and length
-  if (confirmation == "y")
+  if (angleValid(angleFloat))
   {
-    Serial.println("Bending...");
-    bend(angleSteps, lengthSteps);
+
+    // Confirm the data is correct
+    Serial.println("Length: " + String(lengthFloat));
+    Serial.println("Angle: " + String(angleFloat));
+    Serial.println("");
+
+    // Ask user if the data is correct
+    Serial.println("Is this data correct? (y/n)");
+    confirmation = Serial.readStringUntil('\n');
+    Serial.println(confirmation);
+    Serial.println("");
+
+    // Get angleSteps from mapping the angle to the number of steps with function angleToSteps
+    int angleSteps = angleToSteps(angleFloat);
+
+    // Convert the length to steps
+    int lengthSteps = lengthToSteps(lengthFloat);
+
+    // If confirmation is "y" call bending function with the angle and length
+    if (confirmation == "y")
+    {
+      bend(angleSteps, lengthSteps);
+    }
+  }
+  else
+  {
+    Serial.println("Invalid angle");
   }
 }
 
