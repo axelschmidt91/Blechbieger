@@ -215,13 +215,14 @@ void setup()
   {
     delay(1);
   }
-  dataIn = Serial.readString();
-  if (dataIn == "1")
+  dataIn = Serial.readStringUntil('\n');
+  int val = dataIn.toInt();
+  if (val == 1)
   {
     Serial.println("Angle mode selected");
     mode = angle;
   }
-  else if (dataIn == "2")
+  else if (val == 2)
   {
     Serial.println("Steps mode selected");
     mode = steps;
