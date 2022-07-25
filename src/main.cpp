@@ -1,3 +1,6 @@
+/*
+author: Axel Schmidt, axel.sebastian.schmidt@rwth-aachen.de
+*/
 #include <Arduino.h>
 #include <AccelStepper.h>
 #include <Servo.h>
