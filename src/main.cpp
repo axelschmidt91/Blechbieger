@@ -5,6 +5,9 @@
 #define limitSwitch 11
 #define DRY_TESTING
 
+String machineName = "Blechbieger ITA";
+String version = "0.1.0";
+
 // Define the stepper motors and the pins the will use
 AccelStepper feederStepper(1, 5, 6); // (Type:driver, STEP, DIR)
 AccelStepper benderStepper(1, 9, 10);
@@ -190,6 +193,12 @@ void setup()
   Serial.begin(9600);
   Serial.setTimeout(1000);
   pinMode(limitSwitch, INPUT_PULLUP);
+
+  // Print Machine Name and Version
+  Serial.println("");
+  Serial.println("Machine Name: " + machineName);
+  Serial.println("Version: " + version);
+  Serial.println("");
 
   // Select mode of operation. default is angle mode
   Serial.println("Select mode of operation. default is angle mode");
