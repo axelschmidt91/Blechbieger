@@ -24,6 +24,8 @@ String confirmation = "";
 // Define bend speed
 int bendSpeed = 1200;
 
+int timeoutTime = 3000;
+
 int angleToSteps(float angle)
 {
   // Array of angles from 0 to 90 degrees in 5 degree steps
@@ -122,7 +124,9 @@ void stepMode()
   while (Serial.available() == 0)
   {
   }
-  confirmation = Serial.readStringUntil('\n');
+  Serial.setTimeout(100);
+  confirmation = Serial.readString();
+  Serial.setTimeout(timeoutTime);
   Serial.println(confirmation);
   Serial.println("");
 
@@ -166,7 +170,9 @@ void angleMode()
     while (Serial.available() == 0)
     {
     }
-    confirmation = Serial.readStringUntil('\n');
+    Serial.setTimeout(100);
+    confirmation = Serial.readString();
+    Serial.setTimeout(timeoutTime);
     Serial.println(confirmation);
     Serial.println("");
 
@@ -191,7 +197,7 @@ void angleMode()
 void setup()
 {
   Serial.begin(9600);
-  Serial.setTimeout(1000);
+  Serial.setTimeout(timeoutTime);
   pinMode(limitSwitch, INPUT_PULLUP);
 
   // Print Machine Name and Version
