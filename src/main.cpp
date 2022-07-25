@@ -48,6 +48,8 @@ int lengthToSteps(float length)
 
 void bend(float angleSteps, float lengthSteps)
 {
+  Serial.println("Bending...");
+  Serial.println("");
 #ifndef DRY_TESTING
   // Move the feeder stepper motor to the length
   while (feederStepper.currentPosition() != lengthSteps)
@@ -164,7 +166,7 @@ void angleMode()
 void setup()
 {
   Serial.begin(9600);
-  Serial.setTimeout(200);
+  Serial.setTimeout(1000);
   pinMode(limitSwitch, INPUT_PULLUP);
 
   // Select mode of operation. default is angle mode
@@ -192,6 +194,7 @@ void setup()
     Serial.println("Non valid input. Angle mode selected");
     mode = angle;
   }
+  Serial.println("");
 
 #ifndef DRY_TESTING
 
