@@ -37,11 +37,6 @@ modes mode;
 String dataIn = "";
 String confirmation = "";
 
-// Define bend speed
-int bendSpeed = 1200;
-
-int timeoutTime = 3000;
-
 int angleToSteps(float angle)
 {
   // Array of angles from 0 to 90 degrees in 5 degree steps
