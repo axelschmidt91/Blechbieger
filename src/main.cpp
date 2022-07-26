@@ -70,10 +70,10 @@ void bend(int angleSteps, int lengthSteps)
     return;
   }
 
-  Serial.println("Bending...");
-  Serial.println("");
+  Serial.println("Start Bending");
 #ifndef DRY_TESTING
   // Move the feeder stepper motor to the length
+  Serial.println("Feeding...");
   while (feederStepper.currentPosition() != lengthSteps)
   {
     feederStepper.setSpeed(bendSpeed);
@@ -82,6 +82,7 @@ void bend(int angleSteps, int lengthSteps)
   feederStepper.setCurrentPosition(0);
 
   // Move the bender stepper motor to the angle
+  Serial.println("Bending...");
   while (benderStepper.currentPosition() != angleSteps)
   {
     benderStepper.setSpeed(bendSpeed); // if negative rotates anti-clockwise
@@ -91,12 +92,16 @@ void bend(int angleSteps, int lengthSteps)
   delay(waitBeforeBendingBack); // wait before bending back
 
   // Move the bender stepper motor back to 0
+  Serial.println("Bending back...");
   while (benderStepper.currentPosition() != 0)
   {
     benderStepper.setSpeed(-bendSpeed); // if negative rotates anti-clockwise
     benderStepper.run();
   }
+
 #endif
+
+  Serial.println("");
 }
 
 bool angleValid(float angle)
