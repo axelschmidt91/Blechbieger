@@ -5,8 +5,8 @@ author: Axel Schmidt, axel.sebastian.schmidt@rwth-aachen.de
 #include <AccelStepper.h>
 #include <Servo.h>
 
-#define limitSwitch 11
-#define DRY_TESTING
+#define limitSwitch 11 // limit switch pin
+// #define DRY_TESTING // uncomment to enable dry testing without motors and switchs
 
 String machineName = "Blechbieger ITA";
 String version = "0.1.0";
