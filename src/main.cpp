@@ -66,8 +66,14 @@ int lengthToSteps(float length)
   return map(length, 0, 100, 0, 180);
 }
 
-void bend(float angleSteps, float lengthSteps)
+void bend(int angleSteps, int lengthSteps)
 {
+  if (angleSteps < 0 || lengthSteps < 0)
+  {
+    Serial.println("Angle or length is negative. Please check your input.");
+    return;
+  }
+
   Serial.println("Bending...");
   Serial.println("");
 #ifndef DRY_TESTING
