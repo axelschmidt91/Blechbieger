@@ -11,6 +11,18 @@ author: Axel Schmidt, axel.sebastian.schmidt@rwth-aachen.de
 String machineName = "Blechbieger ITA";
 String version = "0.1.0";
 
+// Define variables
+
+int benderOffsetToSwitch = 1000; // in steps
+
+int benderMaxSpeed = 200; // in steps/s
+int feederMaxSpeed = 200; // in steps/s
+int bendSpeed = 200;      // in steps/s
+
+int timeoutTime = 3000; // in ms
+
+// End of variables
+
 // Define the stepper motors and the pins the will use
 AccelStepper feederStepper(1, 5, 6); // (Type:driver, STEP, DIR)
 AccelStepper benderStepper(1, 9, 10);
@@ -240,8 +252,8 @@ void setup()
 #ifndef DRY_TESTING
 
   // Stepper motors max speed
-  feederStepper.setMaxSpeed(2000);
-  benderStepper.setMaxSpeed(2000);
+  feederStepper.setMaxSpeed(feederMaxSpeed);
+  benderStepper.setMaxSpeed(benderMaxSpeed);
 
   // Homing
   while (digitalRead(limitSwitch) != 0)
@@ -252,8 +264,8 @@ void setup()
   }
   delay(40);
 
-  // Move 1400 steps from the limit switch to starting position
-  while (benderStepper.currentPosition() != -1400)
+  // Move number of steps from the limit switch to starting position
+  while (benderStepper.currentPosition() != -benderOffsetToSwitch)
   {
     benderStepper.setSpeed(-bendSpeed); // if negative rotates anti-clockwise
     benderStepper.run();
