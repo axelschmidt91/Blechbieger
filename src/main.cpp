@@ -153,7 +153,7 @@ void stepMode()
   Serial.println("");
 
   // If confirmation is "y" call bending function with the angle and length
-  if (confirmation == "y")
+  if (confirmation.startsWith("y"))
   {
     bend(angleSteps, lengthSteps);
   }
@@ -205,7 +205,7 @@ void angleMode()
     int lengthSteps = lengthToSteps(lengthFloat);
 
     // If confirmation is "y" call bending function with the angle and length
-    if (confirmation == "y")
+    if (confirmation.startsWith("y"))
     {
       bend(angleSteps, lengthSteps);
     }
