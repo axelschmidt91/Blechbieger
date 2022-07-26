@@ -19,7 +19,8 @@ int benderMaxSpeed = 200; // in steps/s
 int feederMaxSpeed = 200; // in steps/s
 int bendSpeed = 200;      // in steps/s
 
-int timeoutTime = 3000; // in ms
+int timeoutTime = 3000;           // in ms
+int waitBeforeBendingBack = 1000; // in ms
 
 // End of variables
 
@@ -92,7 +93,7 @@ void bend(int angleSteps, int lengthSteps)
     benderStepper.run();
   }
 
-  delay(400);
+  delay(waitBeforeBendingBack); // wait before bending back
 
   // Move the bender stepper motor back to 0
   while (benderStepper.currentPosition() != 0)
