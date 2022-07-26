@@ -256,6 +256,8 @@ void setup()
   benderStepper.setMaxSpeed(benderMaxSpeed);
 
   // Homing
+  Serial.println("Homing bender stepper motor");
+  Serial.println("");
   while (digitalRead(limitSwitch) != 0)
   {
     benderStepper.setSpeed(bendSpeed);
