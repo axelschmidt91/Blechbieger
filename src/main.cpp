@@ -6,7 +6,8 @@ author: Axel Schmidt, axel.sebastian.schmidt@rwth-aachen.de
 #include <Servo.h>
 
 #define limitSwitch 11 // limit switch pin
-// #define DRY_TESTING // uncomment to enable dry testing without motors and switchs
+#define DRY_TESTING    // uncomment to enable dry testing without motors and switchs
+// #define DISPLAY_2004A     // uncomment to enable display and encoder KY040
 
 String machineName = "Blechbieger ITA";
 String version = "0.1.0";
@@ -28,6 +29,24 @@ int waitBeforeBendingBack = 1000; // in ms
 AccelStepper feederStepper(1, 5, 6); // (Type:driver, STEP, DIR)
 AccelStepper benderStepper(1, 9, 10);
 
+#ifndef DISPLAY_2004A
+// LCD display
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 20 chars and 4 line display
+
+// Initialisierung benötigter Variablen
+int Counter = 0;
+int Pin_clk_Letzter;
+int Pin_clk_Aktuell;
+
+// Definition der Eingangs-Pins
+int pin_clk = 3;
+int pin_dt = 4;
+int button_pin = 5;
+#endif
+
 enum modes
 {
   angle,
@@ -36,6 +55,10 @@ enum modes
 modes mode;
 String dataIn = "";
 String confirmation = "";
+float lengthFloat = 0.0;
+float angleFloat = 0.0;
+int lengthSteps = 0;
+int angleSteps = 0;
 
 int angleToSteps(float angle)
 {
@@ -161,6 +184,10 @@ void stepMode()
 
 void angleMode()
 {
+#ifndef DISPLAY_2004A
+  // read data from encoder and display it on the LCD
+
+#else
   // Read data from serial port. "length" as float, "angle" as float, separated by commas.
   // Ask user to enter data in the form of "length,angle"
   Serial.println("Enter data in the form of 'length,angle'");
@@ -176,9 +203,10 @@ void angleMode()
   String angle = dataIn.substring(dataIn.indexOf(",") + 1);
 
   // Convert the strings to floats
-  float lengthFloat = length.toFloat();
-  float angleFloat = angle.toFloat();
+  lengthFloat = length.toFloat();
+  angleFloat = angle.toFloat();
 
+#endif
   if (angleValid(angleFloat))
   {
 
@@ -216,11 +244,53 @@ void angleMode()
   }
 }
 
+void lcdWait(int seconds)
+{
+  int time = seconds; // seconds
+  while (true)
+  {
+    lcd.setCursor(18, 3);
+    lcd.print(String(time));
+    delay(1000);
+    time--;
+    if (time == 0)
+    {
+      break;
+    };
+  }
+}
+
 void setup()
 {
   Serial.begin(9600);
   Serial.setTimeout(timeoutTime);
   pinMode(limitSwitch, INPUT_PULLUP);
+
+#ifndef DISPLAY_2004A
+  lcd.init();
+  // Print a message to the LCD.
+  lcd.backlight();
+  lcd.setCursor(3, 0);
+  lcd.print(machineName);
+  lcd.setCursor(0, 2);
+  lcd.print("Version: " + version);
+  lcdWait(10);
+  lcd.clear();
+
+  // Eingangs-Pins werden initialisiert...
+  pinMode(pin_clk, INPUT);
+  pinMode(pin_dt, INPUT);
+  pinMode(button_pin, INPUT);
+
+  // ...und deren Pull-Up Widerstände aktiviert
+  digitalWrite(pin_clk, true);
+  digitalWrite(pin_dt, true);
+  digitalWrite(button_pin, true);
+
+  // Initiales Auslesen des Pin_CLK
+  Pin_clk_Letzter = digitalRead(pin_clk);
+
+#endif
 
   // Print Machine Name and Version
   Serial.println("");
@@ -228,6 +298,84 @@ void setup()
   Serial.println("Version: " + version);
   Serial.println("");
 
+#ifndef DISPLAY_2004A
+  // Print select mode of operation to LCD
+  lcd.setCursor(0, 0);
+  lcd.print("Select Mode:");
+  lcd.setCursor(2, 1);
+  lcd.print("1. Step Mode");
+  lcd.setCursor(2, 2);
+  lcd.print("2. Angle Mode");
+
+  while (true)
+  {
+    // Auslesen des aktuellen Statuses
+    Pin_clk_Aktuell = digitalRead(pin_clk);
+    // Überprüfung auf Änderung
+    if (Pin_clk_Aktuell != Pin_clk_Letzter)
+    {
+      if (digitalRead(pin_dt) != Pin_clk_Aktuell)
+      {
+        // Pin_CLK hat sich zuerst verändert
+        Counter++;
+      }
+      else
+      { // Andernfalls hat sich Pin_DT zuerst verändert
+        Counter--;
+      }
+      if ((Counter) % 4 == 0)
+      {
+        mode = angle;
+        lcd.setCursor(0, 1);
+        lcd.print(" ");
+        lcd.setCursor(0, 2);
+        lcd.write(3);
+      }
+
+      if ((Counter + 2) % 4 == 0)
+      {
+        mode = steps;
+        lcd.setCursor(0, 1);
+        lcd.write(3);
+        lcd.setCursor(0, 2);
+        lcd.print(" ");
+      }
+    }
+    // Vorbereitung für den nächsten Druchlauf:
+    // Der Wert des aktuellen Durchlaufs ist beim nächsten Druchlauf der vorherige Wert
+    Pin_clk_Letzter = Pin_clk_Aktuell;
+
+    // Reset-Funktion um aktuelle Position zu speichern
+    if (!digitalRead(button_pin) && Counter != 0)
+    {
+      Counter = 0;
+      break;
+    }
+  }
+  lcd.clear();
+  lcd.setCursor(0, 0);
+
+  if (mode == angle)
+  {
+    Serial.println("Angle Mode selected");
+    lcd.print("Angle Mode selected");
+  }
+  else if (mode == steps)
+  {
+    Serial.println("Step Mode selected");
+    lcd.print("Step Mode selected");
+  }
+  else
+  {
+    Serial.println("Error");
+    lcd.print("Error");
+  }
+  lcdWait(3);
+  lcd.clear();
+
+#endif
+
+#ifdef DISPLAY_2004A
   // Select mode of operation. default is angle mode
   Serial.println("Select mode of operation. default is angle mode");
   Serial.println("1. Angle mode (Define angle in degree and length in mm)");
@@ -255,6 +403,8 @@ void setup()
     mode = angle;
   }
   Serial.println("");
+
+#endif
 
 #ifndef DRY_TESTING
 
