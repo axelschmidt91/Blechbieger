@@ -10,7 +10,7 @@ author: Axel Schmidt, axel.sebastian.schmidt@rwth-aachen.de
 #define DISPLAY_2004A  // uncomment to enable display and encoder KY040
 
 String machineName = "Blechbieger ITA";
-String version = "0.1.0";
+String version = "0.2.0";
 
 // Define variables
 
