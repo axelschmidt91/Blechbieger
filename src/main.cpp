@@ -7,7 +7,7 @@ author: Axel Schmidt, axel.sebastian.schmidt@rwth-aachen.de
 
 #define limitSwitch 11 // limit switch pin
 #define DRY_TESTING    // uncomment to enable dry testing without motors and switchs
-// #define DISPLAY_2004A     // uncomment to enable display and encoder KY040
+#define DISPLAY_2004A  // uncomment to enable display and encoder KY040
 
 String machineName = "Blechbieger ITA";
 String version = "0.1.0";
@@ -29,22 +29,27 @@ int waitBeforeBendingBack = 1000; // in ms
 AccelStepper feederStepper(1, 5, 6); // (Type:driver, STEP, DIR)
 AccelStepper benderStepper(1, 9, 10);
 
-#ifndef DISPLAY_2004A
+#ifdef DISPLAY_2004A
 // LCD display
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
 LiquidCrystal_I2C lcd(0x27, 20, 4); // set the LCD address to 0x27 for a 20 chars and 4 line display
 
-// Initialisierung benötigter Variablen
+// Initialisation of the encoder variables
 int Counter = 0;
-int Pin_clk_Letzter;
-int Pin_clk_Aktuell;
+int Pin_clk_last;
+int Pin_clk_current;
 
-// Definition der Eingangs-Pins
-int pin_clk = 3;
-int pin_dt = 4;
-int button_pin = 5;
+// Definition of the encoder pins
+int pin_clk = 3;    // clock pin
+int pin_dt = 4;     // data pin
+int button_pin = 5; // button pin
+
+// Definition of button
+int button = 7;      // Digital Pin 7
+int buttonState = 0; // 0 = button not pressed, 1 = button pressed
+
 #endif
 
 enum modes
@@ -52,6 +57,22 @@ enum modes
   angle,
   steps
 };
+#ifdef DISPLAY_2004A
+enum encodePositions
+{
+  length3,
+  length2,
+  length1,
+  length0,
+  length1_,
+  angle3,
+  angle2,
+  angle1,
+  angle0,
+  angle1_,
+};
+encodePositions encodePosition;
+#endif
 modes mode;
 String dataIn = "";
 String confirmation = "";
@@ -92,8 +113,12 @@ void bend(int angleSteps, int lengthSteps)
     Serial.println("Angle or length is negative. Please check your input.");
     return;
   }
+#ifdef DISPLAY_2004A
+  lcd.setCursor(0, 3);
+  lcd.print("Start Bending       ");
 
   Serial.println("Start Bending");
+#endif
 #ifndef DRY_TESTING
   // Move the feeder stepper motor to the length
   Serial.println("Feeding...");
@@ -121,7 +146,19 @@ void bend(int angleSteps, int lengthSteps)
     benderStepper.setSpeed(-bendSpeed); // if negative rotates anti-clockwise
     benderStepper.run();
   }
-
+#else
+#ifdef DISPLAY_2004A
+  delay(1000);
+  lcd.setCursor(0, 3);
+  lcd.print("Dry: Feeding...     ");
+  delay(1000);
+  lcd.setCursor(0, 3);
+  lcd.print("Dry: Bending...     ");
+  delay(1000);
+  lcd.setCursor(0, 3);
+  lcd.print("Dry: Bending back...");
+  delay(1000);
+#endif
 #endif
 
   Serial.println("");
@@ -136,6 +173,179 @@ bool angleValid(float angle)
   else
   {
     return false;
+  }
+}
+
+bool lengthValid(float length)
+{
+  if (length >= 0)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+#ifdef DISPLAY_2004A
+void incrementValueAngleMode()
+{
+  if (encodePosition == length3)
+  {
+    lengthFloat += 50;
+  }
+  else if (encodePosition == length2)
+  {
+    lengthFloat += 50;
+  }
+  else if (encodePosition == length1)
+  {
+    lengthFloat += 5;
+  }
+  else if (encodePosition == length0)
+  {
+    lengthFloat += 0.5;
+  }
+  else if (encodePosition == length1_)
+  {
+    lengthFloat += 0.05;
+  }
+  else if (encodePosition == angle1)
+  {
+    angleFloat += 5;
+  }
+  else if (encodePosition == angle0)
+  {
+    angleFloat += 0.5;
+  }
+  else if (encodePosition == angle1_)
+  {
+    angleFloat += 0.05;
+  }
+}
+
+void decrementValueAngleMode()
+{
+  if (encodePosition == length3)
+  {
+    lengthFloat -= 50;
+  }
+  else if (encodePosition == length2)
+  {
+    lengthFloat -= 50;
+  }
+  else if (encodePosition == length1)
+  {
+    lengthFloat -= 5;
+  }
+  else if (encodePosition == length0)
+  {
+    lengthFloat -= 0.5;
+  }
+  else if (encodePosition == length1_)
+  {
+    lengthFloat -= 0.05;
+  }
+  else if (encodePosition == angle1)
+  {
+    angleFloat -= 5;
+  }
+  else if (encodePosition == angle0)
+  {
+    angleFloat -= 0.5;
+  }
+  else if (encodePosition == angle1_)
+  {
+    angleFloat -= 0.05;
+  }
+}
+
+void displayAngleMode()
+{
+  // Clear the LCD
+  lcd.clear();
+  // write the current values of lengthFloat and angleFloat to LCD
+  lcd.setCursor(0, 0);
+  lcd.print("length: ");
+  lcd.print(lengthFloat);
+  lcd.print(" mm");
+  lcd.setCursor(0, 1);
+  lcd.print("angle:  ");
+  lcd.print(angleFloat);
+  lcd.print(" deg");
+  lcd.setCursor(0, 3);
+  lcd.print("Press A to bend");
+}
+#endif
+
+void changeEncodePosition()
+{
+  if (mode == angle)
+  {
+    if (encodePosition == length2 || encodePosition == length3)
+    {
+      encodePosition = length1;
+    }
+    else if (encodePosition == length1)
+    {
+      encodePosition = length0;
+    }
+    else if (encodePosition == length0)
+    {
+      encodePosition = length1_;
+    }
+    else if (encodePosition == length1_)
+    {
+      encodePosition = angle1;
+    }
+    else if (encodePosition == angle1)
+    {
+      encodePosition = angle0;
+    }
+    else if (encodePosition == angle0)
+    {
+      encodePosition = angle1_;
+    }
+    else if (encodePosition == angle1_)
+    {
+      encodePosition = length2;
+    }
+  }
+  else if (mode == steps)
+  {
+    if (encodePosition == length3)
+    {
+      encodePosition = length2;
+    }
+    else if (encodePosition == length2)
+    {
+      encodePosition = length1;
+    }
+    else if (encodePosition == length1)
+    {
+      encodePosition = length0;
+    }
+    else if (encodePosition == length0)
+    {
+      encodePosition = angle3;
+    }
+    else if (encodePosition == angle3)
+    {
+      encodePosition = angle2;
+    }
+    else if (encodePosition == angle2)
+    {
+      encodePosition = angle1;
+    }
+    else if (encodePosition == angle1)
+    {
+      encodePosition = angle0;
+    }
+    else if (encodePosition == angle0)
+    {
+      encodePosition = length3;
+    }
   }
 }
 
@@ -184,8 +394,48 @@ void stepMode()
 
 void angleMode()
 {
-#ifndef DISPLAY_2004A
+#ifdef DISPLAY_2004A
+  // Display the current values of lengthFloat and angleFloat to LCD
+  displayAngleMode();
+
   // read data from encoder and display it on the LCD
+  while (true)
+  {
+    // Auslesen des aktuellen Statuses
+    Pin_clk_current = digitalRead(pin_clk);
+    // Überprüfung auf Änderung
+    if (Pin_clk_current != Pin_clk_last)
+    {
+      if (digitalRead(pin_dt) != Pin_clk_current)
+      {
+        // Pin_CLK hat sich zuerst verändert
+        incrementValueAngleMode();
+      }
+      else
+      { // Andernfalls hat sich Pin_DT zuerst verändert
+        decrementValueAngleMode();
+      }
+      // Display the new value on the LCD
+      displayAngleMode();
+    }
+    // Vorbereitung für den nächsten Druchlauf:
+    // Der Wert des aktuellen Durchlaufs ist beim nächsten Druchlauf der vorherige Wert
+    Pin_clk_last = Pin_clk_current;
+
+    // change the encodePosition to the next position if the encoder is pressed
+    if (!digitalRead(button_pin))
+    {
+      changeEncodePosition();
+      delay(200);
+    }
+    // if button is pressed, exit value setting mode
+    buttonState = digitalRead(button);
+    if (buttonState == HIGH)
+    {
+      confirmation = "y";
+      break;
+    }
+  }
 
 #else
   // Read data from serial port. "length" as float, "angle" as float, separated by commas.
@@ -207,7 +457,7 @@ void angleMode()
   angleFloat = angle.toFloat();
 
 #endif
-  if (angleValid(angleFloat))
+  if (angleValid(angleFloat) && lengthValid(lengthFloat))
   {
 
     // Confirm the data is correct
@@ -215,6 +465,7 @@ void angleMode()
     Serial.println("Angle: " + String(angleFloat) + " degrees");
     Serial.println("");
 
+#ifndef DISPLAY_2004A
     // Ask user if the data is correct
     Serial.println("Is this data correct? (y/n)");
     while (Serial.available() == 0)
@@ -225,7 +476,7 @@ void angleMode()
     Serial.setTimeout(timeoutTime);
     Serial.println(confirmation);
     Serial.println("");
-
+#endif
     // Get angleSteps from mapping the angle to the number of steps with function angleToSteps
     int angleSteps = angleToSteps(angleFloat);
 
@@ -240,7 +491,11 @@ void angleMode()
   }
   else
   {
-    Serial.println("Invalid angle");
+#ifdef DISPLAY_2004A
+    lcd.setCursor(0, 3);
+    lcd.print("Invalid angle or length");
+#endif
+    Serial.println("Invalid angle or length");
   }
 }
 
@@ -250,6 +505,10 @@ void lcdWait(int seconds)
   while (true)
   {
     lcd.setCursor(18, 3);
+    if (time < 10)
+    {
+      lcd.print(" ");
+    }
     lcd.print(String(time));
     delay(1000);
     time--;
@@ -266,7 +525,7 @@ void setup()
   Serial.setTimeout(timeoutTime);
   pinMode(limitSwitch, INPUT_PULLUP);
 
-#ifndef DISPLAY_2004A
+#ifdef DISPLAY_2004A
   lcd.init();
   // Print a message to the LCD.
   lcd.backlight();
@@ -274,21 +533,23 @@ void setup()
   lcd.print(machineName);
   lcd.setCursor(0, 2);
   lcd.print("Version: " + version);
-  lcdWait(10);
+  lcdWait(2);
   lcd.clear();
 
-  // Eingangs-Pins werden initialisiert...
+  // Input-Pins are initialized...
   pinMode(pin_clk, INPUT);
   pinMode(pin_dt, INPUT);
   pinMode(button_pin, INPUT);
+  pinMode(button, INPUT);
 
-  // ...und deren Pull-Up Widerstände aktiviert
+  // ...and the pull-up resistors are enabled
   digitalWrite(pin_clk, true);
   digitalWrite(pin_dt, true);
   digitalWrite(button_pin, true);
 
   // Initiales Auslesen des Pin_CLK
-  Pin_clk_Letzter = digitalRead(pin_clk);
+  // Initial reading of Pin_CLK
+  Pin_clk_last = digitalRead(pin_clk);
 
 #endif
 
@@ -298,7 +559,7 @@ void setup()
   Serial.println("Version: " + version);
   Serial.println("");
 
-#ifndef DISPLAY_2004A
+#ifdef DISPLAY_2004A
   // Print select mode of operation to LCD
   lcd.setCursor(0, 0);
   lcd.print("Select Mode:");
@@ -309,18 +570,20 @@ void setup()
 
   while (true)
   {
-    // Auslesen des aktuellen Statuses
-    Pin_clk_Aktuell = digitalRead(pin_clk);
-    // Überprüfung auf Änderung
-    if (Pin_clk_Aktuell != Pin_clk_Letzter)
+    // Read the current status of the encoder
+    Pin_clk_current = digitalRead(pin_clk);
+
+    // check if the encoder has changed
+    if (Pin_clk_current != Pin_clk_last)
     {
-      if (digitalRead(pin_dt) != Pin_clk_Aktuell)
+      if (digitalRead(pin_dt) != Pin_clk_current)
       {
-        // Pin_CLK hat sich zuerst verändert
+        // Pin_CLK has changed first
         Counter++;
       }
       else
-      { // Andernfalls hat sich Pin_DT zuerst verändert
+      {
+        // else Pin_DT has changed first
         Counter--;
       }
       if ((Counter) % 4 == 0)
@@ -341,14 +604,14 @@ void setup()
         lcd.print(" ");
       }
     }
-    // Vorbereitung für den nächsten Druchlauf:
-    // Der Wert des aktuellen Durchlaufs ist beim nächsten Druchlauf der vorherige Wert
-    Pin_clk_Letzter = Pin_clk_Aktuell;
 
-    // Reset-Funktion um aktuelle Position zu speichern
-    if (!digitalRead(button_pin) && Counter != 0)
+    // Preparation for the next run:
+    // The value of the current run is the previous value of the next run
+    Pin_clk_last = Pin_clk_current;
+
+    // reset function to save the current position
+    if (!digitalRead(button_pin))
     {
-      Counter = 0;
       break;
     }
   }
@@ -370,12 +633,11 @@ void setup()
     Serial.println("Error");
     lcd.print("Error");
   }
-  lcdWait(3);
+  lcdWait(2);
   lcd.clear();
 
-#endif
+#else
 
-#ifdef DISPLAY_2004A
   // Select mode of operation. default is angle mode
   Serial.println("Select mode of operation. default is angle mode");
   Serial.println("1. Angle mode (Define angle in degree and length in mm)");
