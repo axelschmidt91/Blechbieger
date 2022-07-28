@@ -13,11 +13,11 @@ String version = "0.1.0";
 
 // Define variables
 
-int benderOffsetToSwitch = 1000; // in steps
+int benderOffsetToSwitch = 600; // in steps
 
-int benderMaxSpeed = 200; // in steps/s
-int feederMaxSpeed = 200; // in steps/s
-int bendSpeed = 200;      // in steps/s
+int benderMaxSpeed = 50; // in steps/s
+int feederMaxSpeed = 50; // in steps/s
+int bendSpeed = 50;      // in steps/s
 
 int timeoutTime = 3000;           // in ms
 int waitBeforeBendingBack = 1000; // in ms
