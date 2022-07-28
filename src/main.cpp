@@ -271,6 +271,7 @@ void setup()
     benderStepper.runSpeed();
     benderStepper.setCurrentPosition(0); // When limit switch pressed set position to 0 steps
   }
+  Serial.println("Endstop pressed.");
   delay(40);
 
   // Move number of steps from the limit switch to starting position
@@ -281,6 +282,7 @@ void setup()
   }
   benderStepper.setCurrentPosition(0);
   feederStepper.setCurrentPosition(0);
+  Serial.println("Homing complete");
 #endif
 }
 
