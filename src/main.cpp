@@ -13,11 +13,11 @@ String version = "0.1.0";
 
 // Define variables
 
-int benderOffsetToSwitch = 1000; // in steps
+int benderOffsetToSwitch = 450; // in steps
 
-int benderMaxSpeed = 200; // in steps/s
-int feederMaxSpeed = 200; // in steps/s
-int bendSpeed = 200;      // in steps/s
+int benderMaxSpeed = 50; // in steps/s
+int feederMaxSpeed = 50; // in steps/s
+int bendSpeed = 50;      // in steps/s
 
 int timeoutTime = 3000;           // in ms
 int waitBeforeBendingBack = 1000; // in ms
@@ -40,17 +40,17 @@ String confirmation = "";
 int angleToSteps(float angle)
 {
   // Array of angles from 0 to 90 degrees in 5 degree steps
-  int angles[19] = {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90};
+  float angles[8] = {2, 20, 37.5, 41.3, 42.3, 70, 90};
 
   // Array of 19 values for steps correlated to the angles
-  int steps[19] = {0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180};
+  int steps[8] = {150, 200, 300, 324, 334, 376, 400, 500};
 
-  for (int i = 0; i < 20; i++)
+  for (int i = 0; i < 9; i++)
   {
     if (angle <= angles[i])
     {
       // map the angle to the steps array and return the value
-      return map(angle, angles[i - 1], angles[i], steps[i - 1], steps[i]);
+      return (int)map(angle, angles[i - 1], angles[i], steps[i - 1], steps[i]);
     }
   }
   return 0;
@@ -200,9 +200,11 @@ void angleMode()
 
     // Get angleSteps from mapping the angle to the number of steps with function angleToSteps
     int angleSteps = angleToSteps(angleFloat);
+    Serial.println("Angle steps: " + String(angleSteps));
 
     // Convert the length to steps
     int lengthSteps = lengthToSteps(lengthFloat);
+    Serial.println("Length steps: " + String(lengthSteps));
 
     // If confirmation is "y" call bending function with the angle and length
     if (confirmation.startsWith("y"))
@@ -271,6 +273,7 @@ void setup()
     benderStepper.runSpeed();
     benderStepper.setCurrentPosition(0); // When limit switch pressed set position to 0 steps
   }
+  Serial.println("Endstop pressed.");
   delay(40);
 
   // Move number of steps from the limit switch to starting position
@@ -281,6 +284,7 @@ void setup()
   }
   benderStepper.setCurrentPosition(0);
   feederStepper.setCurrentPosition(0);
+  Serial.println("Homing complete");
 #endif
 }
 
