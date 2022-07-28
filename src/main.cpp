@@ -6,8 +6,8 @@ author: Axel Schmidt, axel.sebastian.schmidt@rwth-aachen.de
 #include <Servo.h>
 
 #define limitSwitch 11 // limit switch pin
-#define DRY_TESTING    // uncomment to enable dry testing without motors and switchs
-#define DISPLAY_2004A  // uncomment to enable display and encoder KY040
+// #define DRY_TESTING    // uncomment to enable dry testing without motors and switchs
+#define DISPLAY_2004A // uncomment to enable display and encoder KY040
 
 String machineName = "Blechbieger ITA";
 String version = "0.2.0";
