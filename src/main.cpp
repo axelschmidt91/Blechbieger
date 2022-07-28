@@ -42,9 +42,9 @@ int Pin_clk_last;
 int Pin_clk_current;
 
 // Definition of the encoder pins
-int pin_clk = 3;    // clock pin
-int pin_dt = 4;     // data pin
-int button_pin = 5; // button pin
+int pin_clk = 2;    // clock pin
+int pin_dt = 3;     // data pin
+int button_pin = 4; // button pin
 
 // Definition of button
 int button = 7;      // Digital Pin 7
