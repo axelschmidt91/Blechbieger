@@ -662,6 +662,21 @@ void lcdWait(int seconds)
     };
   }
 }
+void PrintFileNameDateTime()
+{
+  Serial.println("Code running comes from file ");
+  Serial.println(__FILE__);
+  Serial.print("Compiled: ");
+  Serial.print(__DATE__);
+  Serial.print(" ");
+  Serial.println(__TIME__);
+#ifdef DISPLAY_2004A
+  lcd.setCursor(0, 3);
+  lcd.print(__DATE__);
+  lcd.print(" ");
+  lcd.print(__TIME__);
+#endif
+}
 
 void setup()
 {
@@ -677,6 +692,7 @@ void setup()
   lcd.print(machineName);
   lcd.setCursor(0, 2);
   lcd.print("Version: " + version);
+  PrintFileNameDateTime();
   lcdWait(2);
   lcd.clear();
 
