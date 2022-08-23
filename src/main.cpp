@@ -7,7 +7,7 @@ author: Axel Schmidt, axel.sebastian.schmidt@rwth-aachen.de
 
 #define limitSwitch 11 // limit switch pin
 // #define DRY_TESTING    // uncomment to enable dry testing without motors and switchs
-#define DISPLAY_2004A // uncomment to enable display and encoder KY040
+// #define DISPLAY_2004A // uncomment to enable display and encoder KY040
 
 String machineName = "Blechbieger ITA";
 String version = "0.2.0";
@@ -643,6 +643,7 @@ void angleMode()
   }
 }
 
+#ifdef DISPLAY_2004A
 void lcdWait(int seconds)
 {
   int time = seconds; // seconds
@@ -662,6 +663,7 @@ void lcdWait(int seconds)
     };
   }
 }
+#endif
 
 void setup()
 {
